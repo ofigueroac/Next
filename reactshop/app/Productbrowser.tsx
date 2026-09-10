@@ -48,7 +48,15 @@ export default function ProductBrowser({ products }: { products: Product[] }) {
   return (
     <>
       <SearchBar keyword={keyword} onKeywordChange={setKeyword}></SearchBar>
-      <button onClick={handleReset}>Reset</button>
+      <div className="mx-auto flex w-1/2 px-4 pt-4">
+        <button
+          type="button"
+          onClick={handleReset}
+          className="cursor-pointer rounded-md border border-zinc-300 bg-white px-4 py-2 font-medium text-black transition-colors hover:border-zinc-500 hover:bg-zinc-100 focus:border-zinc-500 focus:outline-none"
+        >
+          Reset
+        </button>
+      </div>
 
       <SelectField
         label="Category"

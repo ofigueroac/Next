@@ -1,4 +1,4 @@
-import ProductBrowser from "./ProductBrowser";
+import ProductBrowser from "./Productbrowser";
 export type Product = {
   id: number;
   title: string;
