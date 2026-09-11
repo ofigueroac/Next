@@ -1,19 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ProductCard from "./ProductCard";
 import SearchBar from "./SearchBar";
 import SelectField from "./SelectField";
 import type { Product } from "./ProductGrid";
 
+function debouncer<Arg extends unknown[]>(
+  fn: (...args: Arg) => void,
+  delay: number,
+) {
+  let timeoutID: ReturnType<typeof setTimeout> | undefined;
+
+  const debounced = (...args: Arg) => {
+    clearTimeout(timeoutID);
+    timeoutID = setTimeout(() => fn(...args), delay);
+  };
+
+  function cancel() {
+    clearTimeout(timeoutID);
+    timeoutID = undefined;
+  }
+
+  return Object.assign(debounced, { cancel });
+}
+
 export default function ProductBrowser({ products }: { products: Product[] }) {
   const [keyword, setKeyword] = useState("");
+  const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("");
+ 
+
   const visibleProducts = products.filter((product) => {
     const matchesKeyword = product.title
       .toLowerCase()
-      .includes(keyword.toLowerCase());
+      .includes(debouncedKeyword.toLowerCase());
     const matchesCategory = category === "" || product.category === category;
 
     return matchesKeyword && matchesCategory;
@@ -40,14 +62,27 @@ export default function ProductBrowser({ products }: { products: Product[] }) {
     { value: "rating", label: "Rating" },
   ];
   function handleReset() {
+    setKeywordDebounced.cancel();
     setKeyword("");
+    setDebouncedKeyword("");
     setCategory("");
     setSort("");
   }
 
+  const setKeywordDebounced = useMemo(
+   ()=>debouncer((keyword:string)=>setDebouncedKeyword(keyword),300),
+   []
+)
+function handleKeywordChange(keyword:string){
+  setKeyword(keyword)
+  setKeywordDebounced(keyword)
+}
   return (
     <>
-      <SearchBar keyword={keyword} onKeywordChange={setKeyword}></SearchBar>
+      <SearchBar
+        keyword={keyword}
+        onKeywordChange={handleKeywordChange}
+      ></SearchBar>
       <div className="mx-auto flex w-1/2 px-4 pt-4">
         <button
           type="button"
