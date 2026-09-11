@@ -73,6 +73,11 @@ export default function ProductBrowser({ products }: { products: Product[] }) {
    ()=>debouncer((keyword:string)=>setDebouncedKeyword(keyword),300),
    []
 )
+useEffect(() => {
+ return ()=>{
+  setKeywordDebounced.cancel()
+ } ;
+},[setKeywordDebounced]);
 function handleKeywordChange(keyword:string){
   setKeyword(keyword)
   setKeywordDebounced(keyword)
