@@ -1,5 +1,4 @@
-import ProductBrowser, { debouncer } from "./Productbrowser";
-import { useState, useEffect } from "react";
+import ProductBrowser from "./Productbrowser";
 
 export type Product = {
   id: number;
@@ -10,14 +9,15 @@ export type Product = {
   price: number;
   category: string;
 };
+
 async function getProducts(productName: string = ""): Promise<Product[]> {
-  const isDebounce = productName === "";
   const urlAPI = "https://dummyjson.com/products";
-  const search = isDebounce ? "/search?q=" + productName : "";
+  const search =
+    productName === ""
+      ? ""
+      : "/search?q=" + encodeURIComponent(productName);
   const res = await fetch(urlAPI + search, {
-    // Optional caching strategies:
-    // cache: 'no-store', // Always dynamic (never cached)
-    next: { revalidate: 60 }, // Incremental Static Regeneration (revalidate every 60s)
+    next: { revalidate: 60 },
   });
 
   if (!res.ok) {
@@ -28,20 +28,8 @@ async function getProducts(productName: string = ""): Promise<Product[]> {
   return data.products;
 }
 
-export default async function ProductGrid() {
-  let products = await getProducts();
-  const [productName, setProductName] = useState("");
+export default async function ProductGrid({ query }: { query: string }) {
+  const products = await getProducts(query);
 
-  useEffect(() => {
-    async () => {
-      products = await getProducts(productName);
-    };
-  }, [setProductName]);
-
-  return (
-    <ProductBrowser
-      products={products}
-      onSearch={setProductName}
-    ></ProductBrowser>
-  );
+  return <ProductBrowser products={products}></ProductBrowser>;
 }

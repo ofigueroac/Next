@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import ProductCard from "./ProductCard";
 import SearchBar from "./SearchBar";
 import SelectField from "./SelectField";
@@ -25,13 +26,9 @@ export function debouncer<Arg extends unknown[]>(
   return Object.assign(debounced, { cancel });
 }
 
-export default function ProductBrowser({
-  products,
-  onSearch,
-}: {
-  products: Product[];
-  onSearch: any;
-}) {
+export default function ProductBrowser({ products }: { products: Product[] }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [category, setCategory] = useState("");
@@ -66,28 +63,39 @@ export default function ProductBrowser({
     { value: "priceHighToLow", label: "Price High To Low" },
     { value: "rating", label: "Rating" },
   ];
+
+  const setKeywordDebounced = useMemo(
+    () =>
+      debouncer((value: string) => {
+        setDebouncedKeyword(value);
+        const href = value
+          ? `${pathname}?q=${encodeURIComponent(value)}`
+          : pathname;
+        router.replace(href, { scroll: false });
+      }, 300),
+    [pathname, router],
+  );
+
+  useEffect(() => {
+    return () => {
+      setKeywordDebounced.cancel();
+    };
+  }, [setKeywordDebounced]);
+
   function handleReset() {
     setKeywordDebounced.cancel();
     setKeyword("");
     setDebouncedKeyword("");
     setCategory("");
     setSort("");
+    router.replace(pathname, { scroll: false });
   }
 
-  const setKeywordDebounced = useMemo(
-    () => debouncer((keyword: string) => setDebouncedKeyword(keyword), 300),
-    [],
-  );
-  useEffect(() => {
-    return () => {
-      setKeywordDebounced.cancel();
-    };
-  }, [setKeywordDebounced]);
-  function handleKeywordChange(keyword: string) {
-    setKeyword(keyword);
-    onSearch = keyword;
-    setKeywordDebounced(keyword);
+  function handleKeywordChange(value: string) {
+    setKeyword(value);
+    setKeywordDebounced(value);
   }
+
   return (
     <>
       <SearchBar
