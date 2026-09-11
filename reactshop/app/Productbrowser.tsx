@@ -6,7 +6,7 @@ import SearchBar from "./SearchBar";
 import SelectField from "./SelectField";
 import type { Product } from "./ProductGrid";
 
-function debouncer<Arg extends unknown[]>(
+export function debouncer<Arg extends unknown[]>(
   fn: (...args: Arg) => void,
   delay: number,
 ) {
@@ -25,12 +25,17 @@ function debouncer<Arg extends unknown[]>(
   return Object.assign(debounced, { cancel });
 }
 
-export default function ProductBrowser({ products }: { products: Product[] }) {
+export default function ProductBrowser({
+  products,
+  onSearch,
+}: {
+  products: Product[];
+  onSearch: any;
+}) {
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("");
- 
 
   const visibleProducts = products.filter((product) => {
     const matchesKeyword = product.title
@@ -70,18 +75,19 @@ export default function ProductBrowser({ products }: { products: Product[] }) {
   }
 
   const setKeywordDebounced = useMemo(
-   ()=>debouncer((keyword:string)=>setDebouncedKeyword(keyword),300),
-   []
-)
-useEffect(() => {
- return ()=>{
-  setKeywordDebounced.cancel()
- } ;
-},[setKeywordDebounced]);
-function handleKeywordChange(keyword:string){
-  setKeyword(keyword)
-  setKeywordDebounced(keyword)
-}
+    () => debouncer((keyword: string) => setDebouncedKeyword(keyword), 300),
+    [],
+  );
+  useEffect(() => {
+    return () => {
+      setKeywordDebounced.cancel();
+    };
+  }, [setKeywordDebounced]);
+  function handleKeywordChange(keyword: string) {
+    setKeyword(keyword);
+    onSearch = keyword;
+    setKeywordDebounced(keyword);
+  }
   return (
     <>
       <SearchBar
